@@ -1,62 +1,123 @@
-// src/tests/transferFlowTest.js
-import { nearService } from '../services/nearService.js';
-import { ENV } from '../config/environment.js';
+// src/tests/testEndpoints.js
+// If you're using Node 18+ you have global fetch, otherwise install node-fetch
+// and import it using: import fetch from 'node-fetch';
 
-async function runTransferFlowTest() {
-  try {
-    console.log("Starting NFT Transfer Flow Test...");
+const BASE_URL = "https://hackcanadanear.onrender.com/api/nft";
 
-    // 1. Mint a new NFT with a random token_id.
-    const token_id = "plant-" + Date.now();
-    console.log("Minting NFT with token_id:", token_id);
-    const mintResult = await nearService.mintPlantNFT({
-      token_id,
-      receiver_id: ENV.NEAR_ACCOUNT_ID,  // Mint to your contract owner's account.
+/**
+ * Test minting an NFT.
+ */
+async function testMint() {
+  console.log("Testing Mint NFT...");
+  const response = await fetch(`${BASE_URL}/mint`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      token_id: "223",
+      receiver_id: "hackcanada.testnet", // minted to hackcanada for transfers
       plant_metadata: {
-        glb_file_url: "https://example.com/plant.glb",
+        glb_file_url: "https://example.com/testplant.glb",
         parameters: {
           color_vibrancy: { score: 85, explanation: "Vibrant color" },
-          leaf_area_index: { score: 90, explanation: "High coverage" },
+          leaf_area_index: { score: 90, explanation: "Good coverage" },
           wilting: { score: 5, explanation: "No wilting" },
           spotting: { score: 2, explanation: "Minor spots" },
-          symmetry: { score: 92, explanation: "Well balanced" }
+          symmetry: { score: 92, explanation: "Balanced growth" }
         },
         name: "Test Plant NFT",
-        wallet_id: ENV.NEAR_ACCOUNT_ID,
+        wallet_id: "hackcanada.testnet",
         price: "1000000000000000000000000"
       }
-    });
-    console.log("Mint Result:", mintResult);
+    })
+  });
+  const data = await response.json();
+  console.log("Mint NFT Response:", data);
+}
 
-    // Wait for state update (adjust delay as needed).
-    await new Promise(resolve => setTimeout(resolve, 5000));
+/**
+ * Test retrieving NFT metadata.
+ */
+async function testGetMetadata() {
+  console.log("Testing Get NFT Metadata...");
+  const tokenId = "223";
+  const response = await fetch(`${BASE_URL}/metadata/${tokenId}`);
+  const data = await response.json();
+  console.log("Get NFT Metadata Response:", data);
+}
 
-    // 2. Transfer the NFT from the owner to lhlrahman.testnet.
-    console.log("Transferring NFT", token_id, "to lhlrahman.testnet...");
-    const transferResult = await nearService.transferNFT({
-      token_id,
+/**
+ * Test retrieving full NFT token details.
+ */
+async function testGetToken() {
+  console.log("Testing Get NFT Token Details...");
+  const tokenId = "223";
+  const response = await fetch(`${BASE_URL}/token/${tokenId}`);
+  const data = await response.json();
+  console.log("Get NFT Token Response:", data);
+}
+
+/**
+ * Test transferring an NFT.
+ * This command transfers the NFT from hackcanada.testnet to another account.
+ */
+async function testTransfer() {
+  console.log("Testing Transfer NFT...");
+  const response = await fetch(`${BASE_URL}/transfer`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      token_id: "223",
       receiver_id: "lhlrahman.testnet",
-      memo: "Testing NFT transfer"
-    });
-    console.log("Transfer Result:", transferResult);
+      memo: "Test NFT transfer",
+      from: "hackcanada.testnet" // Always send from hackcanada.testnet
+    })
+  });
+  const data = await response.json();
+  console.log("Transfer NFT Response:", data);
+}
 
-    // Wait for transfer to be processed.
-    await new Promise(resolve => setTimeout(resolve, 5000));
+/**
+ * Test retrieving all NFTs for a given owner.
+ */
+async function testGetTokensForOwner() {
+  console.log("Testing Get Tokens for Owner...");
+  const owner = "hackcanada.testnet";
+  const response = await fetch(`${BASE_URL}/owner/${owner}`);
+  const data = await response.json();
+  console.log("Get Tokens for Owner Response:", data);
+}
 
-    // 3. Retrieve the NFT details to verify the new owner.
-    console.log("Retrieving NFT details for token:", token_id);
-    const tokenDetails = await nearService.getNFTToken(token_id);
-    console.log("NFT Token Details:", tokenDetails);
+/**
+ * Test shuffling NFTs (LLM negotiation and transfers).
+ */
+async function testShuffle() {
+  console.log("Testing Shuffle NFTs...");
+  const response = await fetch(`${BASE_URL}/shuffle`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({})
+  });
+  const data = await response.json();
+  console.log("Shuffle NFTs Response:", data);
+}
 
-    if (tokenDetails && tokenDetails.owner_id === "lhlrahman.testnet") {
-      console.log("Success: NFT transfer verified. New owner is lhlrahman.testnet");
-    } else {
-      console.error("Failure: NFT transfer not verified. Current owner:",
-        tokenDetails ? tokenDetails.owner_id : "Unknown");
-    }
+/**
+ * Run all tests sequentially.
+ */
+async function runTests() {
+  try {
+    await testMint();
+    // Adding a short delay to ensure state propagation.
+    await new Promise((r) => setTimeout(r, 2000));
+    await testGetMetadata();
+    await testGetToken();
+    await testTransfer();
+    await testGetTokensForOwner();
+    await testShuffle();
+    console.log("All tests executed on https://hackcanadanear.onrender.com");
   } catch (error) {
-    console.error("NFT Transfer Flow Test failed:", error);
+    console.error("Error during tests:", error);
   }
 }
 
-runTransferFlowTest();
+runTests();

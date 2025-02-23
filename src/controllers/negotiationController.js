@@ -1,5 +1,4 @@
 // src/controllers/nftShuffleController.js
-
 import { nearService } from "../services/nearService.js";
 import { llmService } from "../services/llmService.js"; // Assumed to exist and call OpenAI
 import { ENV } from "../config/environment.js";
@@ -10,6 +9,23 @@ const walletAccounts = [
   "lhlrahman.testnet",
   "hackcanada.testnet",
 ];
+
+/**
+ * Helper function to extract a JSON block from a given text.
+ * It finds the first '{' and the last '}' and returns that substring.
+ * Throws an error if no valid JSON block is found.
+ *
+ * @param {string} text - The text containing JSON.
+ * @returns {string} - The extracted JSON string.
+ */
+function extractJSON(text) {
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    throw new Error("No valid JSON block found in LLM response.");
+  }
+  return text.substring(firstBrace, lastBrace + 1);
+}
 
 /**
  * Shuffles NFTs among the specified wallets based on an LLM negotiation.
@@ -49,7 +65,8 @@ Do not output any text outside of the JSON.
     // Step 4: Parse the LLM response (expecting valid JSON).
     let transferPlan;
     try {
-      transferPlan = JSON.parse(llmResponse);
+      const jsonText = extractJSON(llmResponse);
+      transferPlan = JSON.parse(jsonText);
     } catch (err) {
       throw new Error("Failed to parse LLM response as JSON.");
     }
@@ -58,8 +75,8 @@ Do not output any text outside of the JSON.
     }
 
     // Step 5: Execute the transfers.
-    // IMPORTANT: For simplicity, this example only executes transfers if the "from" account
-    // is the same as ENV.NEAR_ACCOUNT_ID (the account our nearService uses).
+    // IMPORTANT: For this demo, only transfers from ENV.NEAR_ACCOUNT_ID (the default account)
+    // will be executed.
     for (const transfer of transferPlan.transfers) {
       const { from, to, token_id, memo } = transfer;
       if (from !== ENV.NEAR_ACCOUNT_ID) {
@@ -71,6 +88,7 @@ Do not output any text outside of the JSON.
         token_id,
         receiver_id: to,
         memo: memo || "Shuffle transfer",
+        from: from
       });
       console.log("Transfer executed. Result:", result);
     }
