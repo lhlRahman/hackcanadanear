@@ -1,6 +1,6 @@
 import { parseSeedPhrase } from 'near-seed-phrase';
 
-const mnemonic = "hard kitten stomach defy exhibit attract drum forget grow struggle session action"; // your seed phrase
+const mnemonic = "donkey segment note blush also city humor orchard solution wage miss cycle"; // your seed phrase
 const { secretKey, publicKey, seedPhrase } = parseSeedPhrase(mnemonic);
 
 console.log("Seed Phrase:", seedPhrase);

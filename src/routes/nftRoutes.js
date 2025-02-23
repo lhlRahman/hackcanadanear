@@ -7,6 +7,7 @@ import {
   getTokensForOwnerController
 } from '../controllers/nftController.js';
 
+import { shuffleNFTsController } from '../controllers/negotiationController.js';
 const router = express.Router();
 
 // Endpoint to mint a new NFT
@@ -23,5 +24,8 @@ router.post('/transfer', transferNFTController);
 
 // Endpoint to list all NFTs for an owner (if implemented)
 router.get('/owner/:account_id', getTokensForOwnerController);
+
+// New endpoint for NFT shuffling based on LLM negotiation
+router.post('/shuffle', shuffleNFTsController);
 
 export default router;

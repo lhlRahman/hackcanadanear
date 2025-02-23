@@ -3,11 +3,13 @@ use near_contract_standards::non_fungible_token::metadata::{
     NFTContractMetadata, NonFungibleTokenMetadataProvider, TokenMetadata, NFT_METADATA_SPEC,
 };
 use near_contract_standards::non_fungible_token::core::NonFungibleTokenCore;
+use near_contract_standards::non_fungible_token::enumeration::NonFungibleTokenEnumeration;
 use near_contract_standards::non_fungible_token::Token;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault, PromiseOrValue, BorshStorageKey, log};
+use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault, PromiseOrValue, BorshStorageKey};
 use near_sdk::collections::{UnorderedMap, UnorderedSet};
+use near_sdk::json_types::U128;
 
 #[derive(BorshSerialize, BorshStorageKey)]
 enum StorageKey {
@@ -43,7 +45,7 @@ pub struct PlantMetadata {
     pub parameters: PlantParameters,
     pub name: String,
     pub wallet_id: String,
-    pub price: String, // Price as string in yoctoNEAR
+    pub price: String,
 }
 
 #[near_bindgen]
@@ -60,7 +62,7 @@ impl Contract {
     pub fn new() -> Self {
         let owner_id = env::predecessor_account_id();
         let mut approved_accounts = UnorderedSet::new(StorageKey::ApprovedAccounts);
-        // Add approved accounts
+        // Insert approved accounts, converting string literals to AccountId
         approved_accounts.insert(&"lebronjamesnear.testnet".parse().unwrap());
         approved_accounts.insert(&"lhlrahman.testnet".parse().unwrap());
         approved_accounts.insert(&"hackcanada.testnet".parse().unwrap());
@@ -78,7 +80,6 @@ impl Contract {
         }
     }
 
-    /// Mint a new NFT (Plant NFT)
     #[payable]
     pub fn nft_mint(
         &mut self,
@@ -86,7 +87,7 @@ impl Contract {
         plant_metadata: PlantMetadata,
         receiver_id: AccountId,
     ) -> Token {
-        // Only contract owner can mint in this example.
+        // Only contract owner can mint NFTs in this example.
         assert_eq!(
             env::predecessor_account_id(),
             self.tokens.owner_id,
@@ -110,8 +111,7 @@ impl Contract {
         self.metadata.insert(&token_id, &plant_metadata);
         self.tokens.internal_mint(token_id, receiver_id, Some(token_metadata))
     }
-    
-    /// Get plant metadata for a given token ID.
+
     pub fn get_plant_metadata(&self, token_id: String) -> Option<PlantMetadata> {
         self.metadata.get(&token_id)
     }
@@ -127,10 +127,9 @@ impl NonFungibleTokenCore for Contract {
         approval_id: Option<u64>, 
         memo: Option<String>
     ) {
-        // Retrieve the token details.
         let token = self.tokens.nft_token(token_id.clone()).expect("Token not found");
         let caller = env::predecessor_account_id();
-        // Allow the transfer if caller is either the token owner or is in the approved accounts list.
+        // Allow transfer if caller is token owner or an approved account.
         assert!(
             caller == token.owner_id || self.approved_accounts.contains(&caller),
             "Sender not approved"
@@ -152,6 +151,22 @@ impl NonFungibleTokenCore for Contract {
 
     fn nft_token(&self, token_id: String) -> Option<Token> {
         self.tokens.nft_token(token_id)
+    }
+}
+
+#[near_bindgen]
+impl NonFungibleTokenEnumeration for Contract {
+    fn nft_tokens(&self, from_index: Option<U128>, limit: Option<u64>) -> Vec<Token> {
+        self.tokens.nft_tokens(from_index, limit)
+    }
+    fn nft_tokens_for_owner(&self, account_id: AccountId, from_index: Option<U128>, limit: Option<u64>) -> Vec<Token> {
+        self.tokens.nft_tokens_for_owner(account_id, from_index, limit)
+    }
+    fn nft_total_supply(&self) -> U128 {
+        self.tokens.nft_total_supply()
+    }
+    fn nft_supply_for_owner(&self, account_id: AccountId) -> U128 {
+        self.tokens.nft_supply_for_owner(account_id)
     }
 }
 
