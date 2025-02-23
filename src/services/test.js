@@ -13,7 +13,7 @@ async function testMint() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      token_id: "226",
+      token_id: "227",
       receiver_id: "hackcanada.testnet", // minted to hackcanada for transfers
       plant_metadata: {
         glb_file_url: "https://example.com/testplant.glb",
@@ -39,7 +39,7 @@ async function testMint() {
  */
 async function testGetMetadata() {
   console.log("Testing Get NFT Metadata...");
-  const tokenId = "226";
+  const tokenId = "227";
   const response = await fetch(`${BASE_URL}/metadata/${tokenId}`);
   const data = await response.json();
   console.log("Get NFT Metadata Response:", data);
@@ -50,7 +50,7 @@ async function testGetMetadata() {
  */
 async function testGetToken() {
   console.log("Testing Get NFT Token Details...");
-  const tokenId = "226";
+  const tokenId = "227";
   const response = await fetch(`${BASE_URL}/token/${tokenId}`);
   const data = await response.json();
   console.log("Get NFT Token Response:", data);
@@ -66,7 +66,7 @@ async function testTransfer() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      token_id: "226",
+      token_id: "227",
       receiver_id: "lhlrahman.testnet",
       memo: "Test NFT transfer",
       from: "hackcanada.testnet" // Always send from hackcanada.testnet
