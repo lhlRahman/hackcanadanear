@@ -1,7 +1,17 @@
 // src/services/nearService.js
 import { connect, keyStores, KeyPair } from 'near-api-js';
 import { nearConfig } from '../config/nearConfig.js';
-import { ENV } from '../config/environment.js';
+
+const ENV = {
+  NEAR_ACCOUNT_ID: "hackcanada.testnet",
+  NEAR_SECRET_KEY: "ed25519:3eFRZuay1FL66JJP3K2wEsKLeYBkR8Hj5hcSb7eVMmEHWKrxR7MmVW9FNs6Qap4XLEebiquVF9VJM5YKoa2CGyM4",
+  NEAR_CONTRACT_ID: "hackcanada.testnet",
+  NEAR_NETWORK_ID: "testnet",
+  PORT: 3000,
+  lebronjames: "ed25519:2g6YZttDoKzXuG6ra7L6TfRm3RCe2zY3iPYFELXqtW1zMsZATyyFpkNE5nAnHXN8kDyUNR6jfcrBVdXWzewzBUnC",
+  lhlrahman: "ed25519:4rpuizqDPgdK3kZEDCifhd52CxBaK5paGVS1XKJ9xWniaiUkcQV1hmQ6hnLg97BBHWfdoDrgjNLL6b2bibcVsEqo",
+  hackcanada: "ed25519:3eFRZuay1FL66JJP3K2wEsKLeYBkR8Hj5hcSb7eVMmEHWKrxR7MmVW9FNs6Qap4XLEebiquVF9VJM5YKoa2CGyM4"
+};
 
 // Create an in-memory keystore instance.
 const keyStore = new keyStores.InMemoryKeyStore();

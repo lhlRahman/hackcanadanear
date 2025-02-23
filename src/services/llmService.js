@@ -5,7 +5,7 @@ import { ENV } from '../config/environment.js';
 /**
  * generateNegotiationResponse
  * This function sends a negotiation prompt to OpenAI's GPT-4 model and returns the response as a JSON string.
- * The negotiation prompt should describe the current NFT distribution and ask for a transfer plan.
+ * The negotiation prompt should describe the current NFT distribution and ask for a transfer plan. You must include atleast one from hackcanada.testnet
  *
  * Expected JSON response format from the LLM:
  * {
